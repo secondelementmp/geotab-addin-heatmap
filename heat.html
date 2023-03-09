@@ -2,84 +2,220 @@
 <html>
 
 <head>
-	<title>Toll Activity</title>
+  <title>Toll Activity</title>
 
-	<link rel="stylesheet" href="css/leaflet.css" />
+  <link rel="stylesheet" href="css/leaflet.css" />
 
 
-	<script type='text/javascript' src="js/leaflet.js"></script>
+  <script type='text/javascript' src="js/leaflet.js"></script>
 
-	<script type='text/javascript' src='js/palette.js'></script>
-	<script type='text/javascript' src='js/leaflet-heat.js'></script>
+  <script type='text/javascript' src='js/palette.js'></script>
+  <script type='text/javascript' src='js/leaflet-heat.js'></script>
 
 </head>
 
 <body>
-  
 
-  <div>
-      <label for="unit">Choose a unit:</label>
+  <div id="filters">
 
-      <select name="unit" id="unit">
+    <label for="unitNumber">Choose a unit:</label>
 
-      </select>
-      
+    <select name="unit" id="unitNumber">
+
+    </select>
+
+
+    <label for="startDate">Start date:</label>
+
+    <input type="text" id="startDate">
+
+
+    <label for="endDate">End date:</label>
+
+    <input type="text" id="endDate">
+
+    <button type="button" id="goButton"
+    onclick="executeReport('TollUsage','GPSLocation','&rc:Parameters=False')">Go</button>
+
+
   </div>
-  
+
+
   <br>
-	<div id="map" style="height: 650px">
+  <div id="map" style="height: 650px">
 
 
-	</div>
+  </div>
 
 
-	<script>
-
-		// map functions
 
 
-		//init map
-		var mymap = L.map('map').setView([39.8, -98.5], 4);
-		L.tileLayer(
-			//'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png',
-			'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-			//'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlrZXBpb3Ryb3dza2lzZ3MiLCJhIjoiY2o2NHkyNXQ2MXhvODMybXZjeXdobmRiaiJ9.HLsD87uGE3aZEHaPQpokhw', 
-			{
-				attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', //, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-				maxZoom: 18,
-				id: 'mapbox/streets-v11',
-				tileSize: 512,
-				zoomOffset: -1
-			}).addTo(mymap);
+  <script>
+
+    function executeReport(folder, report, options) {
+
+        //gets report/data parameters from ui and passes along to download/report/plot functions
+
+        var startDate = document.getElementById("startDate").value;
+        var endDate = document.getElementById("endDate").value;
+        var unitNumber = document.getElementById("unitNumber").value;
+        //var costCenter = document.getElementById("costCenter").value;
+        var accountId = 4632;
+
+        if (endDate == '') { endDate = '01/01/2023' }
+        if (startDate == '') { startDate = '12/31/2023' }
 
 
-            var markerLayer = L.layerGroup();
+        var params = { startDate: startDate, endDate: endDate, accountId: accountId };
 
- function addMapMarker(report, data) {
+        if (unitNumber.length > 0) { params["Unit"] = unitNumber; }
+        //if (costCenter.length > 0) { params["CostCenter"] = costCenter; }
 
 
-    markerLayer.clearLayers();
 
-    var p = palette('cb-Blues', 9);
+        console.log(report);
 
-    var formatter = new Intl.NumberFormat('en-US', {
+        if (report == "GPSOutliers") {
+            downloadData("gpsOutliers", params);
+        } else {
+
+        if (folder == "TollUsage") {
+            downloadData("factUsage", params);
+        };
+
+
+        if (folder == "Violations") {
+            downloadData("factViolations", params);
+        };
+
+     
+    }
+
+
+    }
+
+</script>
+
+
+
+
+
+<script>
+
+  function downloadData(report, filters) {
+
+      //retrieves data from GraphQL backend and adds resuls to map
+
+      var begin = filters['startDate'];
+      var end = filters['endDate'];
+      if (begin == null) { begin = '01/01/2023' };
+      if (end == null) { end = '12/31/2023' };
+
+      var unit = filters['unitNumber'];
+
+      var account = filters['accountId'];
+
+
+      begin = new Date(begin).toISOString().substr(0, 10);
+      end = new Date(end).toISOString().substr(0, 10);
+
+      queryfilters = '';
+      for (var filter in filters) {
+          if (filter != "startDate" && filter != "endDate" && filter != "accountId") {
+
+              queryfilters = queryfilters.concat(`,${filter}: "${filters[filter]}"`);
+          }
+
+
+      }
+
+      if(report=='gpsOutliers'){outFields=''} else {
+      outFields='{Amount OSMLatitude OSMLongitude LocationName}'
+      }
+
+      query = `{${report}(StartDate: "${begin}", EndDate: "${end}"${queryfilters}) ${outFields} }`
+
+
+      fetch('/graphql',
+          {
+              'method': 'POST', 'mode': 'cors',
+              'headers': {
+                  'content-type': 'application/json',
+                  'accept': 'application/json'
+
+              },
+              'body': JSON.stringify({ query })
+          }
+      )
+          .then(resp => resp.json())
+          .then((resp) => {
+
+              if(report=='gpsOutliers') {addInliers(resp)} else {
+              addMapMarker(report, resp);
+              }
+
+          })
+          ;
+
+
+
+
+
+  }
+
+
+
+</script>
+
+
+
+  <script>
+
+    // map functions
+
+
+    //init map
+    var mymap = L.map('map').setView([39.8, -98.5], 4);
+    L.tileLayer(
+      //'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png',
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      //'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlrZXBpb3Ryb3dza2lzZ3MiLCJhIjoiY2o2NHkyNXQ2MXhvODMybXZjeXdobmRiaiJ9.HLsD87uGE3aZEHaPQpokhw', 
+      {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', //, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1
+      }).addTo(mymap);
+
+
+    var markerLayer = L.layerGroup();
+
+    function addMapMarker(report, data) {
+
+
+      markerLayer.clearLayers();
+
+      var p = palette('cb-Blues', 9);
+
+      var formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD'
         //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
-    });
+      });
 
 
-    // var mcg = new L.markerClusterGroup();
+      // var mcg = new L.markerClusterGroup();
 
-    var hm = new Array();
+      var hm = new Array();
 
-    data['data'][report].map(row => {
+      data['data'][report].map(row => {
 
         var marker = L.circle([row['OSMLatitude'], row['OSMLongitude']], {
-            radius: 250,
-            fillColor: 'black',
-            opacity: 0,
-            fillOpacity: 0.5
+          radius: 250,
+          fillColor: 'black',
+          opacity: 0,
+          fillOpacity: 0.5
 
         }).bindPopup(row['LocationName'] + "<br>" + formatter.format(row['Amount']).toString());
 
@@ -98,118 +234,118 @@
         markerLayer.addLayer(marker);
 
         hm.push([row['OSMLatitude'], row['OSMLongitude'], row['Amount']]);
-    })
+      })
 
-    //mcg.addTo(markerLayer);
-    //   markerLayer.addTo(mymap);
-
-
-    var heat = L.heatLayer(hm, { radius: 25, max: 10000, minOpacity: 0.6, gradient:{0.4:"#1b365d",0.6:"#606eb2",0.7:"#dcd59a", 0.8:"#d9c756",1.0:"#e87722"} }).addTo(mymap);
-    markerLayer.addLayer(heat);
-
-    markerLayer.addTo(mymap);
+      //mcg.addTo(markerLayer);
+      //   markerLayer.addTo(mymap);
 
 
+      var heat = L.heatLayer(hm, { radius: 25, max: 10000, minOpacity: 0.6, gradient: { 0.4: "#1b365d", 0.6: "#606eb2", 0.7: "#dcd59a", 0.8: "#d9c756", 1.0: "#e87722" } }).addTo(mymap);
+      markerLayer.addLayer(heat);
 
-}
+      markerLayer.addTo(mymap);
 
 
 
-data={
-  "data": {
-    "factUsage": [
-      {
-        "Amount": 38862.17,
-        "OSMLatitude": 40.641047,
-        "OSMLongitude": -74.209967,
-        "LocationName": "I-287/Eliz/Goethals/Verrazano"
-      },
-      {
-        "Amount": 80,
-        "OSMLatitude": 39.507981,
-        "OSMLongitude": -74.678881,
-        "LocationName": "Route 50"
-      },
-      {
-        "Amount": 4941.81,
-        "OSMLatitude": 40.025953,
-        "OSMLongitude": -74.819114,
-        "LocationName": "Burlington/Mt. Holly"
-      },
-      {
-        "Amount": 175.19,
-        "OSMLatitude": 39.204851,
-        "OSMLongitude": -75.547757,
-        "LocationName": "Denney's Road Ramp"
-      }
-      ]
-  }
-}      
-
-
-addMapMarker("factUsage", data)
-
-
-</script>
-
-
-
-<script>
-
- geotab.addin.tollActivity = () => {
-   // Initialize required Add-In variables
-   // Example:
-   // var element = document.getElementById("myButton");
-   // if (element) {
-   //     element.addEventListener("click", function (event) {
-   //         event.preventDefault();
-   //         alert("Action performed");
-   //     });
-   // }
-   return {
-    initialize(api, state, callback) {
-        console.log("init");
-      
-     callback();
-    },
-    focus(api, state) {
-     // User interface is available
-     console.log("focus");
-     
-     document.getElementById("unit").options.length = 0;
-     var elVehicles = document.getElementById("unit");
-     
-      
-      // Populate vehicles list.
-      api.call('Get', {
-        typeName: 'Device',
-        resultsLimit: 50000,
-        search: {
-          fromDate: new Date('2022-01-01T00:00:00').toISOString()
-        }
-      }, vehicles => {
-        if (!vehicles || vehicles.length < 0) {
-          return;
-        }
-
-
-        vehicles.forEach(vehicle => {
-          let option = new Option();
-          option.text = vehicle.name;
-          option.value = vehicle.id;
-          elVehicles.add(option);
-        });
-      });
-    },
-    blur(api, state) {
-     // Save any Add-In state
-     console.log("blur");
     }
-   };
-  };
-  
 
-</script>
+
+
+    data = {
+      "data": {
+        "factUsage": [
+          {
+            "Amount": 38862.17,
+            "OSMLatitude": 40.641047,
+            "OSMLongitude": -74.209967,
+            "LocationName": "I-287/Eliz/Goethals/Verrazano"
+          },
+          {
+            "Amount": 80,
+            "OSMLatitude": 39.507981,
+            "OSMLongitude": -74.678881,
+            "LocationName": "Route 50"
+          },
+          {
+            "Amount": 4941.81,
+            "OSMLatitude": 40.025953,
+            "OSMLongitude": -74.819114,
+            "LocationName": "Burlington/Mt. Holly"
+          },
+          {
+            "Amount": 175.19,
+            "OSMLatitude": 39.204851,
+            "OSMLongitude": -75.547757,
+            "LocationName": "Denney's Road Ramp"
+          }
+        ]
+      }
+    }
+
+
+    addMapMarker("factUsage", data)
+
+
+  </script>
+
+
+
+  <script>
+
+    geotab.addin.tollActivity = () => {
+      // Initialize required Add-In variables
+      // Example:
+      // var element = document.getElementById("myButton");
+      // if (element) {
+      //     element.addEventListener("click", function (event) {
+      //         event.preventDefault();
+      //         alert("Action performed");
+      //     });
+      // }
+      return {
+        initialize(api, state, callback) {
+          console.log("init");
+
+          callback();
+        },
+        focus(api, state) {
+          // User interface is available
+          console.log("focus");
+
+          document.getElementById("unitNumber").options.length = 0;
+          var elVehicles = document.getElementById("unitNumber");
+
+
+          // Populate vehicles list.
+          api.call('Get', {
+            typeName: 'Device',
+            resultsLimit: 50000,
+            search: {
+              fromDate: new Date('2022-01-01T00:00:00').toISOString()
+            }
+          }, vehicles => {
+            if (!vehicles || vehicles.length < 0) {
+              return;
+            }
+
+
+            vehicles.forEach(vehicle => {
+              let option = new Option();
+              option.text = vehicle.name;
+              option.value = vehicle.id;
+              elVehicles.add(option);
+            });
+          });
+        },
+        blur(api, state) {
+          // Save any Add-In state
+          console.log("blur");
+        }
+      };
+    };
+
+
+  </script>
 
 
 </body>

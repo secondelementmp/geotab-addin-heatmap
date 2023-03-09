@@ -137,7 +137,7 @@
       query = `{${report}(StartDate: "${begin}", EndDate: "${end}"${queryfilters}) ${outFields} }`
 
 
-      fetch('http://bp-docker02/graphql',
+      fetch('https://bp-docker02.nytrucks.local/graphql',
           {
               'method': 'POST', 'mode': 'cors',
               'headers': {

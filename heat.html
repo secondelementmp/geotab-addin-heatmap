@@ -62,8 +62,9 @@
         //var costCenter = document.getElementById("costCenter").value;
         var accountId = 4632;
 
-        if (endDate == '') { endDate = '01/01/2023' }
-        if (startDate == '') { startDate = '12/31/2023' }
+        if (startDate == '') { startDate = '01/01/2023' }
+        if (endDate == '') { endDate = '12/31/2023' }
+
 
 
         var params = { startDate: startDate, endDate: endDate, accountId: accountId };
@@ -136,7 +137,7 @@
       query = `{${report}(StartDate: "${begin}", EndDate: "${end}"${queryfilters}) ${outFields} }`
 
 
-      fetch('/graphql',
+      fetch('http://bp-docker02/graphql',
           {
               'method': 'POST', 'mode': 'cors',
               'headers': {

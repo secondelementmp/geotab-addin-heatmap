@@ -20,7 +20,7 @@
 
     <label for="unitNumber">Choose a unit:</label>
 
-    <select name="unit" id="unitNumber">
+    <select name="unitNumber" id="unitNumber">
 
     </select>
 
@@ -332,7 +332,8 @@
             vehicles.forEach(vehicle => {
               let option = new Option();
               option.text = vehicle.name;
-              option.value = vehicle.id;
+              //option.value = vehicle.id;
+              option.value = vehicle.name;
               elVehicles.add(option);
             });
           });

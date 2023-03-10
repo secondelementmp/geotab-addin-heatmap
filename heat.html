@@ -16,7 +16,7 @@
 
 <body>
 
-  <div id="filters">
+  <div id="filters" class="geo-assets-header">
 
     <label for="unitNumber">Choose a unit:</label>
 
@@ -27,12 +27,12 @@
 
     <label for="startDate">Start date:</label>
 
-    <input type="text" id="startDate" value="03/01/2023">
+    <input type="text" id="startDate" class="geo-text-input geo-text-input-dark" value="03/01/2023">
 
 
     <label for="endDate">End date:</label>
 
-    <input type="text" id="endDate" value="03/08/2023">
+    <input type="text" id="endDate"class="geo-text-input geo-text-input-dark" value="03/08/2023">
 
     <button type="button" id="goButton"
     onclick="executeReport('TollUsage','GPSLocation','&rc:Parameters=False')">Go</button>

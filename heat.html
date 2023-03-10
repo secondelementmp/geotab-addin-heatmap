@@ -12,36 +12,40 @@
   <script type='text/javascript' src='js/palette.js'></script>
   <script type='text/javascript' src='js/leaflet-heat.js'></script>
 
+  <link rel="stylesheet" href="/geotab/checkmate/main.css">
+
 </head>
 
 <body>
 
-  <div id="filters" class="geo-assets-header">
+  <div id="filters" class="checkmateToolbarContainer">
+    <span class="geo-page-toolbar">
 
-    <label for="unitNumber">Choose a unit:</label>
+    <label for="unitNumber" class="geo-page-toolbar__item geo-caption">Unit:</label>
 
-    <select name="unitNumber" id="unitNumber">
+    <select name="unitNumber" id="unitNumber" class="geo-button geo-caption geo-page-toolbar__item">
 
     </select>
 
+    
 
-    <label for="startDate">Start date:</label>
+    <label for="startDate"  class="geo-page-toolbar__item geo-caption">Start date:</label>
 
-    <input type="text" id="startDate" class="geo-text-input geo-text-input-dark" value="03/01/2023">
+    <input type="text" id="startDate" class="geo-text-input geo-page-toolbar__item" value="03/01/2023">
 
 
-    <label for="endDate">End date:</label>
+    <label for="endDate" class="geo-page-toolbar__item geo-caption">End date:</label>
 
-    <input type="text" id="endDate"class="geo-text-input geo-text-input-dark" value="03/08/2023">
+    <input type="text" id="endDate"class="geo-text-input geo-page-toolbar__item" value="03/08/2023">
 
-    <button type="button" id="goButton"
+    <button type="button" id="goButton" class="geo-button geo-page-toolbar__item"
     onclick="executeReport('TollUsage','GPSLocation','&rc:Parameters=False')">Go</button>
-
+  </span>
 
   </div>
 
 
-  <br>
+
   <div id="map" style="height: 650px">
 
 

@@ -252,39 +252,6 @@
 
 
 
-    data = {
-      "data": {
-        "factUsage": [
-          {
-            "Amount": 38862.17,
-            "OSMLatitude": 40.641047,
-            "OSMLongitude": -74.209967,
-            "LocationName": "I-287/Eliz/Goethals/Verrazano"
-          },
-          {
-            "Amount": 80,
-            "OSMLatitude": 39.507981,
-            "OSMLongitude": -74.678881,
-            "LocationName": "Route 50"
-          },
-          {
-            "Amount": 4941.81,
-            "OSMLatitude": 40.025953,
-            "OSMLongitude": -74.819114,
-            "LocationName": "Burlington/Mt. Holly"
-          },
-          {
-            "Amount": 175.19,
-            "OSMLatitude": 39.204851,
-            "OSMLongitude": -75.547757,
-            "LocationName": "Denney's Road Ramp"
-          }
-        ]
-      }
-    }
-
-
-    addMapMarker("factUsage", data)
 
 
   </script>
@@ -348,6 +315,11 @@
 
 
   </script>
+
+
+<script>
+  executeReport('TollUsage','GPSLocation','&rc:Parameters=False');
+</script>
 
 
 </body>

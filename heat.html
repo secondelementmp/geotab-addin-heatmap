@@ -22,7 +22,7 @@
     <span class="geo-page-toolbar">
 
     <label for="unitNumber" class="geo-page-toolbar__item geo-caption">Unit:</label>
-
+      
     <select name="unitNumber" id="unitNumber" class="geo-button geo-caption geo-page-toolbar__item">
 
     </select>
@@ -30,13 +30,11 @@
     
 
     <label for="startDate"  class="geo-page-toolbar__item geo-caption">Start date:</label>
-
-    <input type="text" id="startDate" class="geo-text-input geo-page-toolbar__item" value="03/01/2023">
+    <input type="date" id="startDate" class="geo-text-input geo-page-toolbar__item" value="03/01/2023"  >
 
 
     <label for="endDate" class="geo-page-toolbar__item geo-caption">End date:</label>
-
-    <input type="text" id="endDate"class="geo-text-input geo-page-toolbar__item" value="03/08/2023">
+    <input type="date" id="endDate" class="geo-text-input geo-page-toolbar__item" value="03/08/2023" >
 
     <button type="button" id="goButton" class="geo-button geo-page-toolbar__item"
     onclick="executeReport('TollUsage','GPSLocation','&rc:Parameters=False')">Go</button>
@@ -314,6 +312,7 @@
               option.value = vehicle.name;
               elVehicles.add(option);
             });
+            elVehicles.value='';
           });
         },
         blur(api, state) {
